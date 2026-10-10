@@ -1,0 +1,739 @@
+/* Axon — sidebar panel. Uses Obsidian theme variables only. */
+
+.axon-view {
+  --axon-indent: 28px;
+  --axon-ease: cubic-bezier(0.2, 0, 0, 1);
+  --axon-selected-bg: color-mix(in srgb, var(--interactive-accent) 13%, var(--background-primary));
+  --axon-selected-border: color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+}
+.view-content.axon-view {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.axon-hidden {
+  display: none !important;
+}
+.axon-invisible {
+  visibility: hidden;
+}
+
+/* ---- Header --------------------------------------------------------------------------- */
+
+.axon-head {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.axon-view .axon-head-note {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-semibold);
+  color: var(--text-normal);
+  cursor: pointer;
+}
+.axon-view .axon-head-note:hover {
+  color: var(--text-accent);
+  background: none;
+}
+.axon-head-counts {
+  margin-top: 2px;
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+/* ---- Body & sections ------------------------------------------------------------------ */
+
+.axon-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 12px 16px;
+}
+
+.axon-section {
+  margin-top: 18px;
+}
+.axon-section-title {
+  margin: 0 2px 8px;
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ---- Loading / empty / error / idle --------------------------------------------------- */
+
+.axon-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 40px 12px 28px;
+  text-align: center;
+  animation: axon-fade 240ms var(--axon-ease) both;
+}
+.axon-state-icon {
+  display: flex;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+.axon-state-icon .svg-icon {
+  width: 28px;
+  height: 28px;
+}
+.axon-state.is-loading .axon-state-icon {
+  color: var(--interactive-accent);
+}
+.axon-state.is-loading .axon-state-icon .svg-icon,
+.axon-spin .svg-icon {
+  animation: axon-rotate 900ms linear infinite;
+}
+.axon-state.is-error .axon-state-icon {
+  color: var(--text-error);
+}
+.axon-state-text {
+  font-weight: var(--font-semibold);
+  color: var(--text-normal);
+}
+.axon-state-sub {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  max-width: 34ch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.axon-idle button {
+  margin-top: 12px;
+}
+
+/* ---- Cards ---------------------------------------------------------------------------- */
+
+.axon-card {
+  display: grid;
+  grid-template-rows: 1fr;
+  margin-bottom: 8px;
+  border-radius: var(--radius-m);
+  outline: none;
+  animation: axon-in 260ms var(--axon-ease) both;
+  transition:
+    grid-template-rows 220ms var(--axon-ease),
+    opacity 180ms ease,
+    margin-bottom 220ms var(--axon-ease);
+}
+.axon-card:nth-child(2) { animation-delay: 40ms; }
+.axon-card:nth-child(3) { animation-delay: 80ms; }
+.axon-card:nth-child(4) { animation-delay: 120ms; }
+.axon-card:nth-child(n + 5) { animation-delay: 160ms; }
+.axon-no-enter .axon-card { animation: none; }
+.axon-no-enter .axon-card.is-new { animation: axon-in 260ms var(--axon-ease) both; }
+
+.axon-card.is-leaving {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-bottom: 0;
+}
+
+.axon-card-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 10px 10px 10px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-primary);
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    opacity 160ms ease;
+}
+.axon-card.is-leaving .axon-card-inner {
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
+  transition: padding 220ms var(--axon-ease);
+}
+.axon-card:hover .axon-card-inner {
+  border-color: var(--background-modifier-border-hover);
+}
+.axon-card:focus-visible .axon-card-inner {
+  box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+/* Selected: the whole card takes a soft accent tint. */
+.axon-card.is-selected .axon-card-inner,
+.axon-card.is-selected:hover .axon-card-inner {
+  background: var(--axon-selected-bg);
+  border-color: var(--axon-selected-border);
+}
+
+/* Maybe cards are lighter until selected. */
+.axon-maybe .axon-card:not(.is-selected) .axon-card-inner {
+  background: transparent;
+  border-style: dashed;
+}
+
+.axon-card.is-error .axon-card-inner {
+  border-color: var(--text-error);
+}
+.axon-card.is-done .axon-card-inner {
+  background: transparent;
+  border-style: dashed;
+  cursor: default;
+  animation: axon-fade 240ms var(--axon-ease) both;
+}
+.is-busy .axon-card:not(.is-done):not(.is-sending) .axon-card-inner {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.axon-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Round check indicator; fills with the accent colour when selected. */
+.axon-check {
+  flex: none;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--text-faint);
+  border-radius: 50%;
+  color: transparent;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+.axon-check .svg-icon {
+  width: 11px;
+  height: 11px;
+  stroke-width: 3.5;
+}
+.axon-card:hover .axon-check {
+  border-color: var(--text-muted);
+}
+.axon-card.is-selected .axon-check {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  animation: axon-pop 220ms var(--axon-ease);
+}
+
+.axon-view textarea.axon-title {
+  flex: 0 1 auto;
+  field-sizing: content;
+  min-width: 2ch;
+  max-width: 100%;
+  min-height: 0;
+  height: auto;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.3;
+  padding: 2px 6px;
+  margin-left: -6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-s);
+  background: transparent;
+  box-shadow: none;
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-semibold);
+  color: var(--text-normal);
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+.axon-view textarea.axon-title:hover {
+  background: var(--background-modifier-hover);
+}
+.axon-view textarea.axon-title:focus {
+  background: var(--background-primary);
+  border-color: var(--background-modifier-border-focus);
+}
+
+.axon-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  flex: none;
+}
+.axon-view .axon-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-s);
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.axon-view .axon-icon-button:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+.axon-icon-button .svg-icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* ---- Meta chips ----------------------------------------------------------------------- */
+
+.axon-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin: 7px 0 0 var(--axon-indent);
+}
+.axon-chip-group {
+  display: contents;
+}
+.axon-view .axon-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--background-modifier-hover);
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-normal);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
+}
+.axon-view .axon-chip:hover {
+  background: var(--background-modifier-active-hover);
+  color: var(--text-normal);
+}
+.axon-view .axon-chip.is-empty {
+  background: transparent;
+  border-color: var(--background-modifier-border);
+  color: var(--text-faint);
+}
+.axon-view .axon-chip.is-empty:hover {
+  color: var(--text-muted);
+}
+.axon-view .axon-chip.is-static {
+  cursor: default;
+}
+.axon-view .axon-chip.is-icon-only {
+  gap: 0;
+  width: 22px;
+  padding: 0;
+  justify-content: center;
+}
+.axon-chip .svg-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* Description chip: tinted when the task has a description, outlined while open. */
+.axon-view .axon-desc-chip.has-value {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+  color: var(--text-accent);
+}
+.axon-view .axon-desc-chip.is-active {
+  border-color: var(--interactive-accent);
+}
+
+/* The clear "×" takes no space until the chip is hovered (always visible on label chips). */
+.axon-chip-clear {
+  display: flex;
+  width: 0;
+  margin-left: -4px;
+  overflow: hidden;
+  border-radius: 50%;
+  opacity: 0;
+  cursor: pointer;
+  transition:
+    width 140ms var(--axon-ease),
+    margin 140ms var(--axon-ease),
+    opacity 140ms ease;
+}
+.axon-chip:hover .axon-chip-clear,
+.axon-chip.is-static .axon-chip-clear {
+  width: 14px;
+  margin-left: 0;
+  margin-right: -4px;
+  opacity: 0.7;
+}
+.axon-chip-clear:hover {
+  opacity: 1 !important;
+  background: var(--background-modifier-hover);
+}
+.axon-chip.is-empty .axon-chip-clear {
+  display: none;
+}
+
+/* Transparent native select over the whole chip: the chip shows the value, the select opens the list. */
+.axon-view select.axon-chip-select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  opacity: 0;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.axon-view .axon-chip:focus-within,
+.axon-view button.axon-chip:focus-visible {
+  border-color: var(--background-modifier-border-focus);
+}
+
+/* Native date/time inputs: invisible anchors for the picker. */
+.axon-view input.axon-picker {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- Description (collapsed by default) ----------------------------------------------- */
+
+.axon-desc-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-left: calc(var(--axon-indent) - 6px);
+  transition:
+    grid-template-rows 220ms var(--axon-ease),
+    margin-top 220ms var(--axon-ease);
+}
+.axon-desc-wrap.is-open {
+  grid-template-rows: 1fr;
+  margin-top: 6px;
+}
+.axon-desc-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+.axon-view textarea.axon-desc {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  max-height: 24em;
+  /* As tall as the text plus two empty lines of room. */
+  padding: 4px 6px calc(4px + 2lh);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  box-shadow: none;
+  resize: none;
+  field-sizing: content;
+  font-size: var(--font-ui-small);
+  line-height: var(--line-height-normal);
+  color: var(--text-normal);
+}
+/* Rendered Markdown preview of the description; click to edit. */
+.axon-desc-preview {
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+  line-height: var(--line-height-normal);
+  color: var(--text-muted);
+  cursor: text;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+.axon-desc-preview:hover {
+  background: var(--background-modifier-hover);
+}
+.axon-desc-preview :is(p, ul, ol, blockquote, pre) {
+  margin: 0.25em 0;
+}
+.axon-desc-preview > :first-child,
+.axon-desc-preview > :first-child > :first-child {
+  margin-top: 0;
+}
+.axon-desc-preview > :last-child,
+.axon-desc-preview > :last-child > :last-child {
+  margin-bottom: 0;
+}
+.axon-desc-preview {
+  --list-indent: 1.1em;
+}
+.axon-desc-preview :is(ul, ol) {
+  margin-inline-start: 0;
+  padding-inline-start: 1.1em;
+}
+.axon-desc-preview li {
+  margin-inline-start: 0;
+}
+.axon-view textarea.axon-desc::placeholder {
+  color: var(--text-faint);
+}
+.axon-view textarea.axon-desc:focus {
+  border-color: var(--background-modifier-border-focus);
+}
+
+/* ---- Hints & status ------------------------------------------------------------------- */
+
+.axon-hint,
+.axon-status:not(:empty) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 7px 0 0 var(--axon-indent);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  animation: axon-fade 200ms ease both;
+}
+.axon-hint.is-warning {
+  color: var(--text-warning);
+}
+.axon-card.is-error .axon-status {
+  color: var(--text-error);
+}
+.axon-icon {
+  display: flex;
+  flex: none;
+}
+.axon-hint .svg-icon,
+.axon-status .svg-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.axon-done-icon {
+  display: flex;
+  flex: none;
+  color: var(--color-green);
+}
+.axon-done-icon .svg-icon {
+  width: 18px;
+  height: 18px;
+}
+.axon-done-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+/* ---- Compact rows: already in Vikunja / dismissed ------------------------------------- */
+
+.axon-mini-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 2px 4px 2px 8px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  animation: axon-fade 200ms ease both;
+  transition: background-color 120ms ease;
+}
+.axon-mini-row:hover {
+  background: var(--background-modifier-hover);
+}
+.axon-mini-icon {
+  display: flex;
+  flex: none;
+  color: var(--color-green);
+}
+.axon-dismissed .axon-mini-icon {
+  color: var(--text-faint);
+}
+.axon-mini-icon .svg-icon {
+  width: 14px;
+  height: 14px;
+}
+.axon-mini-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.axon-view .axon-mini-action {
+  opacity: 0;
+  font-size: var(--font-ui-smaller);
+  transition: opacity 120ms ease;
+}
+.axon-mini-row:hover .axon-mini-action,
+.axon-mini-action:focus-visible {
+  opacity: 1;
+}
+.axon-dismissed .axon-link {
+  margin: 0 2px 6px;
+}
+
+/* ---- Footer --------------------------------------------------------------------------- */
+
+.axon-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  /* --axon-bottom-inset = height of Obsidian's floating status bar over this view (set from code). */
+  padding: 10px 12px calc(10px + var(--axon-bottom-inset, 0px));
+  border-top: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+}
+
+.axon-view .axon-link {
+  height: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-normal);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 120ms ease;
+}
+.axon-view .axon-link:hover {
+  color: var(--text-accent);
+  background: none;
+}
+
+/* ---- Status bar item ------------------------------------------------------------------ */
+
+.status-bar-item.axon-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  animation: axon-fade 200ms ease both;
+}
+.status-bar-item.axon-statusbar.is-busy {
+  cursor: pointer;
+}
+.axon-statusbar-icon {
+  display: flex;
+}
+.axon-statusbar-icon .svg-icon {
+  width: 12px;
+  height: 12px;
+}
+.axon-statusbar.is-busy .axon-statusbar-icon {
+  color: var(--interactive-accent);
+}
+.axon-statusbar.is-done .axon-statusbar-icon {
+  color: var(--color-green);
+}
+.axon-statusbar.is-error .axon-statusbar-icon {
+  color: var(--text-error);
+}
+
+/* ---- Tooltip (appended to <body>, so not scoped to the view) --------------------------- */
+
+.tooltip.axon-tooltip {
+  max-width: 260px;
+  padding: 8px 10px;
+  text-align: left;
+  white-space: normal;
+  line-height: 1.45;
+}
+.theme-light .tooltip.axon-tooltip {
+  --tooltip-background: var(--color-base-100);
+  --tooltip-color: var(--color-base-00);
+}
+
+/* ---- Motion --------------------------------------------------------------------------- */
+
+@keyframes axon-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes axon-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes axon-pop {
+  0% {
+    transform: scale(0.8);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes axon-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .axon-card,
+  .axon-card-inner,
+  .axon-check,
+  .axon-state,
+  .axon-hint,
+  .axon-status,
+  .axon-chip,
+  .axon-chip-clear,
+  .axon-desc-wrap,
+  .axon-mini-row {
+    animation: none !important;
+    transition: none !important;
+  }
+  .axon-state.is-loading .axon-state-icon .svg-icon,
+  .axon-spin .svg-icon {
+    animation-duration: 2400ms;
+  }
+}

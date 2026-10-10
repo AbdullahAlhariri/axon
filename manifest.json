@@ -1,0 +1,10 @@
+{
+  "id": "axon",
+  "name": "Axon",
+  "version": "0.4.0",
+  "minAppVersion": "1.8.7",
+  "description": "AI task extraction for Vikunja: Claude reads your note, drafts the reminders, and you approve what gets added.",
+  "author": "Abdullah Alhariri",
+  "isDesktopOnly": true,
+  "authorUrl": "https://github.com/AbdullahAlhariri"
+}
