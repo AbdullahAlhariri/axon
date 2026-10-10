@@ -59,7 +59,7 @@ export class HandledStore {
     vikunjaTaskId: number | null,
   ): Promise<HandledEntry> {
     const entry: HandledEntry = {
-      id: globalThis.crypto.randomUUID(),
+      id: window.crypto.randomUUID(),
       title: input.title,
       sourceQuote: input.sourceQuote,
       status,

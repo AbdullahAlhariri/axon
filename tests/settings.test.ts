@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SETTINGS, loadPersisted, normalizeBaseUrl } from "../src/settings";
+import { DEFAULT_SETTINGS, TOKEN_SECRET_ID, loadPersisted, migrateLegacyToken, normalizeBaseUrl } from "../src/settings";
 
 describe("normalizeBaseUrl", () => {
   it.each([
@@ -39,7 +39,7 @@ describe("loadPersisted", () => {
   it("uses the spec defaults", () => {
     expect(DEFAULT_SETTINGS).toEqual({
       vikunjaUrl: "",
-      vikunjaToken: "",
+      vikunjaTokenSecret: "",
       fallbackProjectId: null,
       claudePath: "",
       model: "claude-sonnet-5-5",
@@ -49,5 +49,38 @@ describe("loadPersisted", () => {
       openTaskLimit: 300,
       customInstructions: "",
     });
+  });
+});
+
+describe("migrateLegacyToken", () => {
+  function store() {
+    const secrets = new Map<string, string>();
+    return { secrets, setSecret: (id: string, v: string) => void secrets.set(id, v), getSecret: (id: string) => secrets.get(id) ?? null };
+  }
+
+  it("moves a token stored in data.json into the keychain", () => {
+    const st = store();
+    const settings = { ...DEFAULT_SETTINGS, vikunjaToken: "tk_123" };
+    const result = migrateLegacyToken(settings, st);
+    expect(result.changed).toBe(true);
+    expect(st.secrets.get(TOKEN_SECRET_ID)).toBe("tk_123");
+    expect(result.settings.vikunjaTokenSecret).toBe(TOKEN_SECRET_ID);
+    expect(result.settings).not.toHaveProperty("vikunjaToken");
+  });
+
+  it("leaves settings alone when there is no legacy token", () => {
+    const st = store();
+    const result = migrateLegacyToken({ ...DEFAULT_SETTINGS, vikunjaTokenSecret: "mine" }, st);
+    expect(result.changed).toBe(false);
+    expect(result.settings.vikunjaTokenSecret).toBe("mine");
+    expect(st.secrets.size).toBe(0);
+  });
+
+  it("drops an empty legacy field without touching the keychain", () => {
+    const st = store();
+    const result = migrateLegacyToken({ ...DEFAULT_SETTINGS, vikunjaToken: "" }, st);
+    expect(result.changed).toBe(true);
+    expect(result.settings).not.toHaveProperty("vikunjaToken");
+    expect(st.secrets.size).toBe(0);
   });
 });

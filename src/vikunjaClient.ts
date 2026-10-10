@@ -41,6 +41,10 @@ type Json = Record<string, unknown>;
 const PER_PAGE = 50;
 const MAX_PAGES = 100;
 
+function str(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
 function asArray(value: unknown): Json[] {
   return Array.isArray(value) ? (value as Json[]) : [];
 }
@@ -72,14 +76,14 @@ export class VikunjaClient {
     const items = await this.paginate("/projects", {}, Infinity);
     return items
       .filter((p) => typeof p.id === "number" && p.id > 0 && p.is_archived !== true)
-      .map((p) => ({ id: p.id as number, title: String(p.title ?? "") }));
+      .map((p) => ({ id: p.id as number, title: str(p.title) }));
   }
 
   async listLabels(): Promise<VikunjaLabel[]> {
     const items = await this.paginate("/labels", {}, Infinity);
     return items
       .filter((l) => typeof l.id === "number")
-      .map((l) => ({ id: l.id as number, title: String(l.title ?? "") }));
+      .map((l) => ({ id: l.id as number, title: str(l.title) }));
   }
 
   async listOpenTasks(limit: number): Promise<VikunjaTask[]> {
@@ -93,7 +97,7 @@ export class VikunjaClient {
     }
     return items.slice(0, limit).map((t) => ({
       id: t.id as number,
-      title: String(t.title ?? ""),
+      title: str(t.title),
       dueDate: toDueDate(t.due_date),
       projectId: Number(t.project_id ?? 0),
     }));

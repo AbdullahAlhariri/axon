@@ -43,7 +43,7 @@
 
 ## Install
 
-Axon runs on Obsidian desktop (macOS and Linux) and needs:
+Axon runs on Obsidian desktop 1.11.4+ (macOS and Linux) and needs:
 
 - [Claude Code](https://claude.com/claude-code), installed and logged in (run `claude` once in a terminal). No Anthropic API key needed.
 - A [Vikunja](https://vikunja.io) API token with **projects** and **labels** (read all), **tasks** (read all, create), **task labels** (bulk) and **task comments** (create).
@@ -51,7 +51,7 @@ Axon runs on Obsidian desktop (macOS and Linux) and needs:
 **BRAT** — install [BRAT](https://github.com/TfTHacker/obsidian42-brat), choose *Add beta plugin* and enter `AbdullahAlhariri/axon`.
 **Manual** — copy `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/AbdullahAlhariri/axon/releases/latest) into `<vault>/.obsidian/plugins/axon/`.
 
-Then enable **Axon** under *Settings → Community plugins*, enter your Vikunja URL and token, and press **Test connection**.
+Then enable **Axon** under *Settings → Community plugins*, enter your Vikunja URL, pick or add your token in Obsidian's keychain, and press **Test connection**.
 
 <details>
 <summary><b>Privacy & disclosures</b></summary>
@@ -60,7 +60,7 @@ Then enable **Axon** under *Settings → Community plugins*, enter your Vikunja 
 - **Network** — to draft tasks, the note's text plus your Vikunja project names, label names and open-task titles are sent to Anthropic through your local Claude Code CLI. Tasks you select are created on *your* Vikunja server.
 - **Accounts** — requires a Claude account (via Claude Code) and a Vikunja account.
 - **Outside the vault** — Axon runs the `claude` executable installed on your machine.
-- **Storage** — settings, including the Vikunja token, live in the plugin's `data.json` inside your vault.
+- **Storage** — the Vikunja token is kept in Obsidian's keychain, not in your vault files. Other settings and the list of handled tasks live in the plugin's `data.json`.
 - **No telemetry.**
 
 </details>

@@ -1,14 +1,14 @@
-import { MarkdownRenderer, Notice, Plugin, TFile, requestUrl, type WorkspaceLeaf } from "obsidian";
+import { Notice, Plugin, TFile, requestUrl, type WorkspaceLeaf } from "obsidian";
 import { nodeProbe, resolveClaudeBinary } from "./claudeBinary";
 import { localDateString } from "./dates";
 import { runClaude } from "./claudeRunner";
 import { extractTodos, summarize, type Extraction } from "./extractTodos";
 import { HandledStore } from "./handledStore";
 import { errorMessage, sendDraft } from "./sender";
-import { loadPersisted } from "./settings";
+import { loadPersisted, migrateLegacyToken } from "./settings";
 import { AxonSettingTab } from "./settingsTab";
 import { ScanStatus } from "./statusBar";
-import type { PanelOptions } from "./reviewPanel";
+import type { ShowOptions } from "./tasksView";
 import { TasksView, VIEW_TYPE_TASKS } from "./tasksView";
 import type { NoteInput, PersistedData } from "./types";
 import { VikunjaClient, type HttpFn } from "./vikunjaClient";
@@ -42,7 +42,7 @@ export default class AxonPlugin extends Plugin {
   private currentScan: AbortController | null = null;
 
   async onload(): Promise<void> {
-    this.persisted = loadPersisted(await this.loadData());
+    await this.loadPersisted();
     this.handled = new HandledStore(this.persisted.handled, async (map) => {
       this.persisted.handled = map;
       await this.saveData(this.persisted);
@@ -68,7 +68,7 @@ export default class AxonPlugin extends Plugin {
       callback: () => void this.activateView(),
     });
 
-    this.addRibbonIcon("list-checks", "Scan note with Axon", () => void this.scanActiveNote());
+    this.addRibbonIcon("list-checks", "Scan current note for tasks", () => void this.scanActiveNote());
 
     this.registerEvent(
       this.app.vault.on("rename", (file, oldPath) => {
@@ -79,9 +79,17 @@ export default class AxonPlugin extends Plugin {
 
   /** Called by Obsidian when data.json changed on disk, e.g. synced from another machine. */
   async onExternalSettingsChange(): Promise<void> {
-    this.persisted = loadPersisted(await this.loadData());
+    await this.loadPersisted();
     this.handled.replace(this.persisted.handled);
     this.resetClaudeBinary();
+  }
+
+  /** Loads data.json, moving a token from older versions into Obsidian's keychain. */
+  private async loadPersisted(): Promise<void> {
+    this.persisted = loadPersisted(await this.loadData());
+    const migrated = migrateLegacyToken(this.persisted.settings, this.app.secretStorage);
+    this.persisted.settings = migrated.settings;
+    if (migrated.changed) await this.saveData(this.persisted);
   }
 
   async saveAll(): Promise<void> {
@@ -90,10 +98,11 @@ export default class AxonPlugin extends Plugin {
 
   vikunja(): VikunjaClient {
     const s = this.persisted.settings;
-    if (!s.vikunjaUrl || !s.vikunjaToken) {
+    const token = s.vikunjaTokenSecret ? this.app.secretStorage.getSecret(s.vikunjaTokenSecret) : null;
+    if (!s.vikunjaUrl || !token) {
       throw new Error("Set your Vikunja URL and API token in the plugin settings first.");
     }
-    return new VikunjaClient(s.vikunjaUrl, s.vikunjaToken, obsidianHttp);
+    return new VikunjaClient(s.vikunjaUrl, token, obsidianHttp);
   }
 
   getClaudeBinary(): string {
@@ -178,14 +187,13 @@ export default class AxonPlugin extends Plugin {
     );
     result.catch(() => undefined); // failures are shown by the panel / status bar below
 
-    const options: PanelOptions = {
+    const options: ShowOptions = {
       note,
       modelLabel: modelLabel(s.model, s.effort),
       today: () => localDateString(new Date()),
       result,
       signal: abort.signal,
       cancel: () => abort.abort(),
-      renderMarkdown: (markdown, el) => MarkdownRenderer.render(this.app, markdown, el, note.path, this),
       send: async (draft) => {
         const out = await sendDraft(client, draft, note, s.defaultTime);
         if (out.ok && out.taskId !== null) {

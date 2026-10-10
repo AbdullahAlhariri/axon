@@ -5,7 +5,8 @@ export type Priority = 0 | 1 | 2 | 3 | 4 | 5;
 
 export interface PluginSettings {
   vikunjaUrl: string;
-  vikunjaToken: string;
+  /** Key of the Vikunja API token in Obsidian's keychain (app.secretStorage). */
+  vikunjaTokenSecret: string;
   fallbackProjectId: number | null;
   /** Empty string = auto-detect the claude binary. */
   claudePath: string;

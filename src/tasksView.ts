@@ -1,8 +1,11 @@
-import { ItemView, Scope, setIcon, type WorkspaceLeaf } from "obsidian";
+import { ItemView, MarkdownRenderer, Scope, setIcon, type WorkspaceLeaf } from "obsidian";
 import { bottomInset } from "./layout";
 import { ReviewPanel, type PanelOptions } from "./reviewPanel";
 
 export const VIEW_TYPE_TASKS = "axon-tasks";
+
+/** Panel options without the Markdown renderer, which the view supplies (it owns the rendered children). */
+export type ShowOptions = Omit<PanelOptions, "renderMarkdown">;
 
 /** Right-sidebar view: shows the drafts for the last scanned note while you keep writing. */
 export class TasksView extends ItemView {
@@ -49,9 +52,12 @@ export class TasksView extends ItemView {
   }
 
   /** Shows a scan (running or finished); replaces whatever was shown before. */
-  show(options: PanelOptions): void {
+  show(options: ShowOptions): void {
     this.panel?.destroy();
-    this.panel = new ReviewPanel(this.contentEl, options);
+    this.panel = new ReviewPanel(this.contentEl, {
+      ...options,
+      renderMarkdown: (markdown, el) => MarkdownRenderer.render(this.app, markdown, el, options.note.path, this),
+    });
     this.panel.mount();
     window.requestAnimationFrame(() => this.updateInset());
   }

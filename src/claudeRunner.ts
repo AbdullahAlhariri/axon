@@ -66,7 +66,12 @@ export function parseClaudeEnvelope(stdout: string): unknown {
   }
   const env = envelope as Record<string, unknown>;
   if (env.is_error === true || (typeof env.subtype === "string" && env.subtype !== "success")) {
-    const detail = typeof env.result === "string" && env.result ? env.result : String(env.subtype ?? "unknown error");
+    const detail =
+      typeof env.result === "string" && env.result
+        ? env.result
+        : typeof env.subtype === "string"
+          ? env.subtype
+          : "unknown error";
     throw new ClaudeError(`Claude reported an error: ${detail}`, "result");
   }
   if (env.structured_output === undefined || env.structured_output === null) {
@@ -84,7 +89,7 @@ export function runClaude(o: RunClaudeOptions): Promise<unknown> {
     let settled = false;
     let stdout = "";
     let stderr = "";
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    let timer: number | undefined;
 
     // Obsidian started from a desktop launcher has a minimal PATH; an npm-installed claude is a node
     // script and needs node, which sits next to it (nvm, npm-global). Put the binary's folder first.
@@ -103,18 +108,18 @@ export function runClaude(o: RunClaudeOptions): Promise<unknown> {
     const finish = (fn: () => void): void => {
       if (settled) return;
       settled = true;
-      if (timer !== undefined) clearTimeout(timer);
+      if (timer !== undefined) window.clearTimeout(timer);
       o.signal?.removeEventListener("abort", onAbort);
       fn();
     };
     const kill = (): void => {
       child.kill("SIGTERM");
-      setTimeout(() => {
+      window.setTimeout(() => {
         if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
       }, 2000);
     };
 
-    timer = setTimeout(() => {
+    timer = window.setTimeout(() => {
       kill();
       finish(() =>
         reject(new ClaudeError(`Claude did not answer within ${Math.round(o.timeoutMs / 1000)}s`, "timeout")),
@@ -141,7 +146,7 @@ export function runClaude(o: RunClaudeOptions): Promise<unknown> {
           try {
             resolve(parseClaudeEnvelope(stdout));
           } catch (e) {
-            reject(e);
+            reject(e instanceof Error ? e : new ClaudeError(String(e), "parse"));
           }
           return;
         }

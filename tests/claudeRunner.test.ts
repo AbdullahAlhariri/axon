@@ -6,6 +6,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import {
   ClaudeError,
   buildClaudeArgs,
+  parseClaudeEnvelope,
   claudeVersion,
   runClaude,
   type RunClaudeOptions,
@@ -134,5 +135,11 @@ describe("runClaude", () => {
 describe("claudeVersion", () => {
   it("returns the CLI version line", async () => {
     await expect(claudeVersion(FAKE)).resolves.toBe("9.9.9 (Claude Code)");
+  });
+});
+
+describe("parseClaudeEnvelope", () => {
+  it("names an unknown error when subtype is not text", () => {
+    expect(() => parseClaudeEnvelope('{"is_error":true,"subtype":{"x":1}}')).toThrow("Claude reported an error: unknown error");
   });
 });

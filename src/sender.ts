@@ -47,7 +47,7 @@ const markdown = new Marked({
 /** Vikunja task descriptions are HTML; the description stays clean — the note link goes into a comment. */
 export function buildDescriptionHtml(draft: Pick<Draft, "description">): string {
   const description = draft.description.trim();
-  return description ? (markdown.parse(description, { async: false }) as string).trim() : "";
+  return description ? markdown.parse(description, { async: false }).trim() : "";
 }
 
 export function buildCommentHtml(note: NoteInput): string {

@@ -44,6 +44,17 @@ describe("VikunjaClient", () => {
     expect(await client.listProjects()).toEqual([{ id: 4, title: "Work" }]);
   });
 
+  it("treats non-text titles as empty", async () => {
+    const { http } = fakeHttp({
+      "GET /projects": () => ok([{ id: 1, title: { nested: true } }, { id: 2, title: 42 }], { "x-pagination-total-pages": "1" }),
+    });
+    const client = new VikunjaClient("https://vik.example.com", "tok", http);
+    expect(await client.listProjects()).toEqual([
+      { id: 1, title: "" },
+      { id: 2, title: "" },
+    ]);
+  });
+
   it("follows x-pagination-total-pages", async () => {
     const { http, calls } = fakeHttp({
       "GET /labels": (req) =>

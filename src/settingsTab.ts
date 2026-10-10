@@ -1,4 +1,4 @@
-import { App, Notice, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, PluginSettingTab, SecretComponent, Setting } from "obsidian";
 import { claudeVersion } from "./claudeRunner";
 import { isValidTime } from "./dates";
 import type AxonPlugin from "./main";
@@ -37,20 +37,21 @@ export class AxonSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Vikunja API token")
-      .setDesc("Vikunja → Settings → API Tokens. Needs: projects (read all), labels (read all), tasks (read all, create), task labels (bulk), task comments (create).")
-      .addText((t) => {
-        t.inputEl.type = "password";
-        t.setValue(s.vikunjaToken).onChange(async (v) => {
-          s.vikunjaToken = v.trim();
+      .setDesc(
+        "Stored in Obsidian's keychain. Needs these permissions: projects and labels (read all), tasks (read all, create), task labels (bulk), task comments (create).",
+      )
+      .addComponent((el) =>
+        new SecretComponent(this.app, el).setValue(s.vikunjaTokenSecret).onChange(async (v) => {
+          s.vikunjaTokenSecret = v ?? "";
           await save();
-        });
-      });
+        }),
+      );
 
     const fallback = new Setting(containerEl)
       .setName("Fallback project")
-      .setDesc("Used when Claude's suggestion doesn't fit. Click “Load projects” to fill the list.");
+      .setDesc("Used when Claude's suggestion doesn't fit. Load your projects to choose one.");
     fallback.addDropdown((dd) => {
-      dd.addOption("", "(first project)");
+      dd.addOption("", "First project");
       if (s.fallbackProjectId !== null) dd.addOption(String(s.fallbackProjectId), `Project #${s.fallbackProjectId}`);
       dd.setValue(s.fallbackProjectId === null ? "" : String(s.fallbackProjectId));
       dd.onChange(async (v) => {
@@ -62,7 +63,7 @@ export class AxonSettingTab extends PluginSettingTab {
           try {
             const projects = await this.plugin.vikunja().listProjects();
             dd.selectEl.empty();
-            dd.addOption("", "(first project)");
+            dd.addOption("", "First project");
             for (const p of projects) dd.addOption(String(p.id), p.title);
             dd.setValue(s.fallbackProjectId === null ? "" : String(s.fallbackProjectId));
           } catch (e) {
@@ -73,11 +74,11 @@ export class AxonSettingTab extends PluginSettingTab {
     });
 
     new Setting(containerEl)
-      .setName("Claude Code path")
+      .setName("Path to the Claude executable")
       .setDesc("Leave empty to find `claude` automatically on this machine (macOS and Linux).")
       .addText((t) =>
         t
-          .setPlaceholder("auto-detect")
+          .setPlaceholder("Detected automatically")
           .setValue(s.claudePath)
           .onChange(async (v) => {
             s.claudePath = v.trim();
@@ -115,7 +116,7 @@ export class AxonSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Default time for date-only todos")
-      .setDesc("HH:MM, 24-hour")
+      .setDesc("24-hour time, for example 23:59.")
       .addText((t) =>
         t.setValue(s.defaultTime).onChange(async (v) => {
           if (isValidTime(v.trim())) {
@@ -127,7 +128,7 @@ export class AxonSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Open tasks sent for duplicate check")
-      .setDesc("How many of your newest open Vikunja tasks Claude compares against.")
+      .setDesc("How many of your newest open tasks are checked for duplicates.")
       .addText((t) =>
         t.setValue(String(s.openTaskLimit)).onChange(async (v) => {
           const n = Number(v);
@@ -140,7 +141,7 @@ export class AxonSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Custom instructions")
-      .setDesc("Extra rules for Claude, e.g. “Skip workouts and daily routines.”")
+      .setDesc("Extra rules for Claude, for example: skip workouts and daily routines.")
       .addTextArea((t) => {
         t.setValue(s.customInstructions).onChange(async (v) => {
           s.customInstructions = v;
@@ -151,7 +152,7 @@ export class AxonSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Test connection")
-      .setDesc("Checks Vikunja and Claude Code on this machine.")
+      .setDesc("Checks the connection to your task server and the Claude executable on this machine.")
       .addButton((b) =>
         b.setButtonText("Test").onClick(async () => {
           const lines: string[] = [];
