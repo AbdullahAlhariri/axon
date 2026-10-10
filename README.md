@@ -10,8 +10,9 @@
 </p>
 
 <p align="center">
-  Write the way you think. <b>Axon</b> reads your note with Claude, finds what you'd otherwise forget,<br>
-  and sends the tasks you pick to <a href="https://vikunja.io">Vikunja</a>, while you keep writing.
+  Write the way you think. <b>Axon</b> reads your note with <b>your own Claude Code</b>, finds what you'd otherwise forget,<br>
+  and sends the tasks you pick to <a href="https://vikunja.io">Vikunja</a>, while you keep writing.<br>
+  <sub>No API keys: Axon runs on the Claude Code you're already logged into, on your own plan.</sub>
 </p>
 
 <p align="center">
@@ -29,6 +30,7 @@
 
 ## Why it feels different
 
+- **No API keys.** Axon runs your local Claude Code, so it uses your existing login and plan.
 - **Reminders, not your agenda.** Habits, routines and time blocks stay out. Only the things you could forget.
 - **One goal, one task.** "Ask A for a quote, otherwise B" becomes one task, with the fallback in its description.
 - **Nothing leaves without you.** Every draft starts unselected.
@@ -43,7 +45,7 @@
 
 Axon runs on Obsidian desktop (macOS and Linux) and needs:
 
-- [Claude Code](https://claude.com/claude-code), installed and logged in (run `claude` once in a terminal).
+- [Claude Code](https://claude.com/claude-code), installed and logged in (run `claude` once in a terminal). No API key needed.
 - A [Vikunja](https://vikunja.io) API token with **projects** and **labels** (read all), **tasks** (read all, create), **task labels** (bulk) and **task comments** (create).
 
 **BRAT** — install [BRAT](https://github.com/TfTHacker/obsidian42-brat), choose *Add beta plugin* and enter `AbdullahAlhariri/axon`.
